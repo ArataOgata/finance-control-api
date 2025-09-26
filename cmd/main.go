@@ -1,16 +1,26 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	"go-api/config"
+	"go-api/internal/router"
 )
 
 func main() {
-	myRouter := chi.NewRouter()
-	myRouter.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Pong"))
-	})
 
-	http.ListenAndServe(":8080", myRouter)
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Error loading config: %v", err)
+	}
+
+	r := router.NewRouter()
+
+	log.Printf("Server running on %s\n", cfg.ServerPort)
+
+	err = http.ListenAndServe(cfg.ServerPort, r)
+	if err != nil {
+		log.Fatalf("Server error: %v", err)
+	}
 }
