@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"go-api/config"
+	"go-api/internal/db"
 	"go-api/internal/router"
 )
 
@@ -14,6 +15,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
+
+	db.ConnectDatabase(cfg)
 
 	r := router.NewRouter()
 
