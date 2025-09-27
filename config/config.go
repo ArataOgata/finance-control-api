@@ -16,7 +16,7 @@ func LoadConfig() (Config, error) {
 
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
-	viper.AddConfigPath("/")
+	viper.AddConfigPath("/Users/arataogata/dev/go/lesson1/go-api/")
 
 	viper.AutomaticEnv()
 
