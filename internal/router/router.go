@@ -18,9 +18,15 @@ func NewRouter() *chi.Mux {
 	userService := service.NewUserService(userRepo)
 	userHandler := handlers.NewUserHandler(userService)
 
+	catRepo := repository.NewCategoryRepository(db.DB)
+	catService := service.NewCategoryService(catRepo, userRepo)
+	catHandler := handlers.NewCategoryHandler(catService)
+
 	// public
 	r.Post("/register", userHandler.Register)
 	r.Get("/user", userHandler.GetUser)
+
+	r.Post("/category", catHandler.CreateCategory)
 
 	return r
 }
