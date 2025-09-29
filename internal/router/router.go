@@ -27,6 +27,7 @@ func NewRouter() *chi.Mux {
 	r.Get("/user", userHandler.GetUser)
 
 	r.Post("/category", catHandler.CreateCategory)
+	r.Get("/category", catHandler.GetCategory)
 
 	return r
 }

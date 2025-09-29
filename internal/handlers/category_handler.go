@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go-api/internal/service"
 	"net/http"
+	"strconv"
 )
 
 type CategoryHandler struct {
@@ -26,7 +27,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	category, err := h.service.CreateCategory(input.Title, input.Description, input.UserID)
+	category, err := h.service.CreateCategory(input.Title, input.Description, uint(input.UserID))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -34,4 +35,22 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(category)
+}
+
+func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request) {
+	idUsStr := r.URL.Query().Get("user_id")
+	user_id, _ := strconv.Atoi(idUsStr)
+
+	idCatStr := r.URL.Query().Get("category_id")
+	category_id, _ := strconv.Atoi(idCatStr)
+
+	category, err := h.service.GetCategory(uint(category_id), uint(user_id))
+	if err != nil {
+		http.Error(w, "category not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(category)
+
 }

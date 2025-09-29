@@ -11,7 +11,8 @@ import (
 )
 
 type CategoryService interface {
-	CreateCategory(title string, description string, userId int) (*models.Category, error)
+	CreateCategory(title string, description string, userId uint) (*models.Category, error)
+	GetCategory(CategoryID uint, userID uint) (*models.Category, error)
 }
 
 type categoryService struct {
@@ -23,8 +24,8 @@ func NewCategoryService(repo repository.CategoryRepository, userRepo repository.
 	return &categoryService{repo: repo, userRepo: userRepo}
 }
 
-func (c *categoryService) CreateCategory(title string, description string, userID int) (*models.Category, error) {
-	user, err := c.userRepo.FindByID(uint(userID))
+func (c *categoryService) CreateCategory(title string, description string, userID uint) (*models.Category, error) {
+	user, err := c.userRepo.FindByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Println("User not found:", userID)
@@ -34,7 +35,7 @@ func (c *categoryService) CreateCategory(title string, description string, userI
 		return nil, fmt.Errorf("failed to check user: %w", err)
 	}
 
-	exists, err := c.repo.FindByTitle(title, int(user.UserID))
+	exists, err := c.repo.FindByTitle(title, user.UserID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Пользователь не найден, можно продолжать регистрацию
@@ -57,4 +58,28 @@ func (c *categoryService) CreateCategory(title string, description string, userI
 
 	err = c.repo.Create(category)
 	return category, err
+}
+
+func (c *categoryService) GetCategory(CategoryID uint, userID uint) (*models.Category, error) {
+	user, err := c.userRepo.FindByID(userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println("User not found:", userID)
+			return nil, fmt.Errorf("user not found: %w", err)
+		}
+		log.Println("Failed to check user:", err)
+		return nil, fmt.Errorf("failed to check user: %w", err)
+	}
+
+	category, err := c.repo.GetByCategoryId(CategoryID, user.UserID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println("Category not found:", CategoryID)
+			return nil, err
+		}
+		log.Println("Failed to get category:", err)
+		return nil, fmt.Errorf("failed to get category: %w", err)
+	}
+
+	return category, nil
 }
