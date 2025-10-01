@@ -1,23 +1,15 @@
 package dto
 
 import (
-	"errors"
 	"strings"
 )
 
 type UpdateCategoryRequest struct {
-	CategoryID  uint    `json:"category_id" validate:"required"`
-	UserID      uint    `json:"user_id" validate:"required"`
+	CategoryID  uint    `json:"category_id" validate:"required,min=1"`
+	UserID      uint    `json:"user_id" validate:"required,min=1"`
 	Title       *string `json:"title,omitempty" validate:"omitempty,min=1,max=255"`
-	Description *string `json:"description,omitempty" validate:"omitempty,max=1000"`
+	Description *string `json:"description,omitempty" validate:"omitempty,min=1,max=1000"`
 	Total       *int    `json:"total,omitempty" validate:"omitempty,min=0"`
-}
-
-func (r *UpdateCategoryRequest) Validate() error {
-	if r.Total != nil && *r.Total < 0 {
-		return errors.New("total cannot be negative")
-	}
-	return nil
 }
 
 func (r *UpdateCategoryRequest) IsEmpty() bool {

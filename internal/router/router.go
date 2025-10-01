@@ -23,12 +23,16 @@ func NewRouter() *chi.Mux {
 	catHandler := handlers.NewCategoryHandler(catService)
 
 	// public
-	r.Post("/register", userHandler.Register)
-	r.Get("/user", userHandler.GetUser)
+	r.Route("/api/v1/user", func(r chi.Router) {
+		r.Post("/register", userHandler.Register)
+		r.Get("/", userHandler.GetUser)
+	})
 
-	r.Post("/category", catHandler.CreateCategory)
-	r.Get("/category", catHandler.GetCategory)
-	r.Patch("/updateCat", catHandler.UpdateCategory)
+	r.Route("/api/v1/category", func(r chi.Router) {
+		r.Post("/", catHandler.CreateCategory)
+		r.Get("/", catHandler.GetCategory)
+		r.Patch("/update", catHandler.UpdateCategory)
+	})
 
 	return r
 }

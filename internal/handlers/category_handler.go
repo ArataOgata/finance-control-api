@@ -67,16 +67,6 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := validator.ValidateIDs(req.CategoryID, req.UserID); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := req.Validate(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
 	if err := validator.ValidateUpdateRequest(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
