@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"go-api/internal/dto"
 	"go-api/internal/models"
 	"go-api/internal/repository"
 	"log"
@@ -13,6 +14,7 @@ import (
 type CategoryService interface {
 	CreateCategory(title string, description string, userId uint) (*models.Category, error)
 	GetCategory(CategoryID uint, userID uint) (*models.Category, error)
+	UpdateCategory(CategoryID uint, userID uint, req *dto.UpdateCategoryRequest) (*models.Category, error)
 }
 
 type categoryService struct {
@@ -79,6 +81,43 @@ func (c *categoryService) GetCategory(CategoryID uint, userID uint) (*models.Cat
 		}
 		log.Println("Failed to get category:", err)
 		return nil, fmt.Errorf("failed to get category: %w", err)
+	}
+
+	return category, nil
+}
+
+func (c *categoryService) UpdateCategory(CategoryID uint, userID uint, req *dto.UpdateCategoryRequest) (*models.Category, error) {
+
+	user, err := c.userRepo.FindByID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	category, err := c.repo.GetByCategoryId(CategoryID, user.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get category: %w", err)
+	}
+
+	if req.IsEmpty() {
+		return nil, errors.New("no fields to update")
+	}
+
+	updates := req.ToMap()
+
+	if err := c.repo.UpdateCategory(category, updates); err != nil {
+		return nil, fmt.Errorf("failed to update category: %w", err)
+	}
+
+	if title, ok := updates["title"].(string); ok {
+		category.Title = title
+	}
+
+	if description, ok := updates["description"].(string); ok {
+		category.Description = description
+	}
+
+	if total, ok := updates["total"].(int); ok {
+		category.Total = total
 	}
 
 	return category, nil

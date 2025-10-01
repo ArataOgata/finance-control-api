@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"go-api/internal/dto"
 	"go-api/internal/service"
+	"go-api/internal/validators"
 	"net/http"
 	"strconv"
 )
@@ -53,4 +55,39 @@ func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(category)
 
+}
+
+func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request) {
+	var req dto.UpdateCategoryRequest
+
+	validator := &validators.CategoryValidator{}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if err := validator.ValidateIDs(req.CategoryID, req.UserID); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := validator.ValidateUpdateRequest(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	category, err := h.service.UpdateCategory(uint(req.CategoryID), uint(req.UserID), &req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(category)
 }
