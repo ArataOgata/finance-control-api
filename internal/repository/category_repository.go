@@ -12,6 +12,7 @@ type CategoryRepository interface {
 	Create(category *models.Category) error
 	FindByTitle(title string, userID uint) (*models.Category, error)
 	GetByCategoryId(CategoryID uint, userID uint) (*models.Category, error)
+	UpdateCategory(category *models.Category, updates map[string]interface{}) error
 }
 
 type categoryRepository struct {
@@ -48,4 +49,8 @@ func (c *categoryRepository) GetByCategoryId(CategoryID uint, userID uint) (*mod
 		return nil, err
 	}
 	return &category, nil
+}
+
+func (c *categoryRepository) UpdateCategory(category *models.Category, updates map[string]interface{}) error {
+	return c.db.Model(category).Updates(updates).Error
 }
