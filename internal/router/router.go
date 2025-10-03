@@ -22,6 +22,10 @@ func NewRouter() *chi.Mux {
 	catService := service.NewCategoryService(catRepo, userRepo)
 	catHandler := handlers.NewCategoryHandler(catService)
 
+	ordRepo := repository.NewOrderRepository(db.DB)
+	ordService := service.NewOrederService(ordRepo, userRepo, catRepo)
+	ordHandler := handlers.NewOrderHandler(db.DB, ordService)
+
 	// public
 	r.Route("/api/v1/user", func(r chi.Router) {
 		r.Post("/register", userHandler.Register)
@@ -32,6 +36,10 @@ func NewRouter() *chi.Mux {
 		r.Post("/", catHandler.CreateCategory)
 		r.Get("/", catHandler.GetCategory)
 		r.Patch("/update", catHandler.UpdateCategory)
+	})
+
+	r.Route("/api/v1/order", func(r chi.Router) {
+		r.Post("/", ordHandler.CreateOrder)
 	})
 
 	return r
