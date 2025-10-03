@@ -9,8 +9,9 @@ import (
 
 // UserRepository — интерфейс, определяющий контракт для работы с пользователями в базе данных
 type UserRepository interface {
-	Create(user *models.User) error                       // Метод для создания нового пользователя
-	FindByID(id uint) (*models.User, error)               // Метод для поиска пользователя по ID
+	Create(user *models.User) error         // Метод для создания нового пользователя
+	FindByID(id uint) (*models.User, error) // Метод для поиска пользователя по ID
+	FindByIDWithTx(tx *gorm.DB, id uint) (*models.User, error)
 	FindByUsername(username string) (*models.User, error) // Метод для поиска пользователя по имени
 	Update(user *models.User) error                       // Метод для обновления данных пользователя
 	Delete(id uint) error                                 // Метод для удаления пользователя по ID
@@ -60,4 +61,14 @@ func (r *userRepository) Update(user *models.User) error {
 // Delete удаляет пользователя по ID
 func (r *userRepository) Delete(id uint) error {
 	return r.db.Delete(&models.User{}, id).Error // Удаляем запись из базы по ID
+}
+
+func (r *userRepository) FindByIDWithTx(tx *gorm.DB, id uint) (*models.User, error) {
+	if tx == nil {
+		return nil, errors.New("transaction is required")
+	}
+
+	var user models.User
+	err := tx.First(&user, id).Error
+	return &user, err
 }
