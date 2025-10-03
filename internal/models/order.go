@@ -8,7 +8,8 @@ type Order struct {
 	UserID      uint      `gorm:"not null" json:"user_id"`
 	CategoryID  uint      `gorm:"not null" json:"category_id"`
 	Description string    `gorm:"size:300" json:"description"`
-	Request     []byte    `gorm:"type:jsonb;not null" json:"request"`
-	Response    []byte    `gorm:"type:jsonb;not null" json:"response"`
+	Amount      int       `gorm:"not null" json:"amount"`
+	Request     []byte    `gorm:"type:jsonb;" json:"-"`
+	Response    []byte    `gorm:"type:jsonb;" json:"-"`
 	NaviDate    time.Time `gorm:"autoCreateTime" json:"navi_date"`
 }
