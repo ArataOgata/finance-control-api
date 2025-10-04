@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	dto "go-api/internal/dto/order_dto"
 	"go-api/internal/service"
+	"log"
 	"net/http"
 
 	"gorm.io/gorm"
@@ -38,7 +39,16 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		log.Printf("error: %v", err)
+		h.sendJSONError(w, err.Error(), http.StatusBadRequest)
 	}
 
+}
+
+func (h *OrderHandler) sendJSONError(w http.ResponseWriter, message string, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(map[string]string{
+		"error": message,
+	})
 }

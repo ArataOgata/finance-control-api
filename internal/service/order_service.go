@@ -40,6 +40,15 @@ func (os *orderService) CreateOrder(tx *gorm.DB, req *dto.CreateOrderRequest) (*
 		return nil, fmt.Errorf("failed to get category: %w", err)
 	}
 
+	if user.Balance < req.Amount {
+		return nil, fmt.Errorf("failed, insufficient funds")
+	}
+
+	user.Balance -= req.Amount
+	if err := os.userRepo.UpdateWithTx(tx, user); err != nil {
+		return nil, fmt.Errorf("недостаточно средств. Доступно: %.2f, требуется: %.2f", user.Balance, req.Amount)
+	}
+
 	order := &models.Order{ // Создание модели заказа из DTO
 		UserID:      req.UserID,
 		CategoryID:  req.CategoryID,
