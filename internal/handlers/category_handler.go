@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"go-api/internal/dto"
+	dto "go-api/internal/dto/category_dto"
 	"go-api/internal/service"
 	"go-api/internal/validators"
 	"net/http"
