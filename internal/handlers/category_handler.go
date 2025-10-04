@@ -72,7 +72,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	category, err := h.service.UpdateCategory(uint(req.CategoryID), uint(req.UserID), &req)
+	category, err := h.service.UpdateCategory(&req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
