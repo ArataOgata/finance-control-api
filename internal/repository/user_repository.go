@@ -13,8 +13,9 @@ type UserRepository interface {
 	FindByID(id uint) (*models.User, error) // Метод для поиска пользователя по ID
 	FindByIDWithTx(tx *gorm.DB, id uint) (*models.User, error)
 	FindByUsername(username string) (*models.User, error) // Метод для поиска пользователя по имени
-	Update(user *models.User) error                       // Метод для обновления данных пользователя
-	Delete(id uint) error                                 // Метод для удаления пользователя по ID
+	Update(user *models.User, updates map[string]interface{}) error
+	UpdateWithTx(tx *gorm.DB, user *models.User) error
+	Delete(id uint) error // Метод для удаления пользователя по ID
 }
 
 // userRepository — структура, которая реализует интерфейс UserRepository
@@ -54,8 +55,8 @@ func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 }
 
 // Update обновляет данные пользователя в базе
-func (r *userRepository) Update(user *models.User) error {
-	return r.db.Save(user).Error // Используем GORM для обновления записи
+func (r *userRepository) Update(user *models.User, updates map[string]interface{}) error {
+	return r.db.Model(user).Updates(updates).Error
 }
 
 // Delete удаляет пользователя по ID
@@ -71,4 +72,11 @@ func (r *userRepository) FindByIDWithTx(tx *gorm.DB, id uint) (*models.User, err
 	var user models.User
 	err := tx.First(&user, id).Error
 	return &user, err
+}
+
+func (r *userRepository) UpdateWithTx(tx *gorm.DB, user *models.User) error {
+	if tx == nil {
+		return errors.New("transaction is required")
+	}
+	return tx.Save(user).Error
 }

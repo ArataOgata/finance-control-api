@@ -30,6 +30,7 @@ func NewRouter() *chi.Mux {
 	r.Route("/api/v1/user", func(r chi.Router) {
 		r.Post("/register", userHandler.Register)
 		r.Get("/", userHandler.GetUser)
+		r.Patch("/update", userHandler.UpdateUser)
 	})
 
 	r.Route("/api/v1/category", func(r chi.Router) {
