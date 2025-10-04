@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
-	"go-api/internal/dto"
+	dto "go-api/internal/dto/category_dto"
 	"go-api/internal/models"
 	"go-api/internal/repository"
 	"log"

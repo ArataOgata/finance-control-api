@@ -1,7 +1,7 @@
 package validators
 
 import (
-	"go-api/internal/dto"
+	dto "go-api/internal/dto/category_dto"
 
 	"github.com/go-playground/validator/v10"
 )

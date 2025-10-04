@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"go-api/internal/dto"
+	dto "go-api/internal/dto/order_dto"
 	"go-api/internal/service"
 	"net/http"
 

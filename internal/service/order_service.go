@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"go-api/internal/dto"
+	dto "go-api/internal/dto/order_dto"
 	"go-api/internal/models"
 	"go-api/internal/repository"
 
