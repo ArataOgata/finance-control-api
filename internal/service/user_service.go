@@ -71,7 +71,10 @@ func (s *userService) UpdateUser(req *userdto.UpdateUserRequest) (*models.User, 
 		return nil, errors.New("no fields to update")
 	}
 
-	updates := req.ToMap()
+	if *req.Balance < 0 {
+		return nil, fmt.Errorf(" <0 : %w", err)
+	}
+	updates := req.ToMap(&user.Balance)
 
 	if err := s.repo.Update(user, updates); err != nil {
 		return nil, fmt.Errorf("failde to update user: %w", err)
