@@ -1,7 +1,11 @@
 package router
 
 import (
+	"go-api/internal/middleware/logger"
+	"log/slog"
+
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
 	"go-api/internal/db"
 	"go-api/internal/handlers"
@@ -9,10 +13,8 @@ import (
 	"go-api/internal/service"
 )
 
-func NewRouter() *chi.Mux {
+func NewRouter(log *slog.Logger) *chi.Mux {
 	r := chi.NewRouter()
-
-	r.Get("/ping", handlers.PingHandler)
 
 	userRepo := repository.NewUserRepository(db.DB)
 	userService := service.NewUserService(userRepo)
@@ -25,6 +27,11 @@ func NewRouter() *chi.Mux {
 	ordRepo := repository.NewOrderRepository(db.DB)
 	ordService := service.NewOrederService(ordRepo, userRepo, catRepo)
 	ordHandler := handlers.NewOrderHandler(db.DB, ordService)
+
+	r.Use(middleware.RequestID)
+	r.Use(logger.MiddleLogger(log))
+
+	r.Get("/ping", handlers.PingHandler)
 
 	// public
 	r.Route("/api/v1/user", func(r chi.Router) {
