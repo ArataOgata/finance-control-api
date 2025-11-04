@@ -1,7 +1,9 @@
 package main
 
 import (
+	"go-api/internal/logger"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"go-api/config"
@@ -12,18 +14,29 @@ import (
 func main() {
 
 	cfg, err := config.LoadConfig()
+
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
+	logs := logger.SetupLogger(cfg.Env)
 
 	db.ConnectDatabase(cfg)
 
-	r := router.NewRouter()
+	r := router.NewRouter(logs)
 
-	log.Printf("Server running on %s\n", cfg.ServerPort)
+	logs.Info("Server running on ", slog.String("Address", cfg.HttpServer.Address))
 
-	err = http.ListenAndServe(cfg.ServerPort, r)
-	if err != nil {
-		log.Fatalf("Server error: %v", err)
+	srv := &http.Server{
+		Addr:         cfg.HttpServer.Address,
+		Handler:      r,
+		ReadTimeout:  cfg.HttpServer.Timeout,
+		WriteTimeout: cfg.HttpServer.Timeout,
+		IdleTimeout:  cfg.HttpServer.IdleTimeout,
 	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		logs.Error("Error starting server: %v", err)
+	}
+
+	logs.Info("Server stopped")
 }
