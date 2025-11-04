@@ -1,47 +1,40 @@
-package repository // Объявляем пакет repository, который находится в директории internal/repository
+package repository
 
 import (
 	"errors"
-	"go-api/internal/models" // Импортируем пакет с моделью User, которая описывает структуру данных пользователя
+	"go-api/internal/models"
 
-	"gorm.io/gorm" // Импортируем GORM — библиотеку для работы с базой данных
+	"gorm.io/gorm"
 )
 
-// UserRepository — интерфейс, определяющий контракт для работы с пользователями в базе данных
 type UserRepository interface {
-	Create(user *models.User) error         // Метод для создания нового пользователя
-	FindByID(id uint) (*models.User, error) // Метод для поиска пользователя по ID
+	Create(user *models.User) error
+	FindByID(id uint) (*models.User, error)
 	FindByIDWithTx(tx *gorm.DB, id uint) (*models.User, error)
-	FindByUsername(username string) (*models.User, error) // Метод для поиска пользователя по имени
+	FindByUsername(username string) (*models.User, error)
 	Update(user *models.User, updates map[string]interface{}) error
 	UpdateWithTx(tx *gorm.DB, user *models.User) error
-	Delete(id uint) error // Метод для удаления пользователя по ID
+	Delete(id uint) error
 }
 
-// userRepository — структура, которая реализует интерфейс UserRepository
 type userRepository struct {
 	db *gorm.DB // Поле для хранения подключения к базе данных (GORM)
 }
 
-// NewUserRepository — конструктор для создания экземпляра репозитория
-// Принимает подключение к базе данных и возвращает интерфейс UserRepository
 func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{db: db} // Создаём структуру userRepository с переданным подключением и возвращаем её как интерфейс
 }
 
-// Create сохраняет нового пользователя в базе данных
 func (r *userRepository) Create(user *models.User) error {
 	return r.db.Create(user).Error // Используем GORM для создания записи в базе данных
 }
 
-// FindByID ищет пользователя по его ID
 func (r *userRepository) FindByID(id uint) (*models.User, error) {
-	var user models.User               // Создаём переменную для хранения результата запроса
-	err := r.db.First(&user, id).Error // Ищем первую запись в базе с указанным ID
-	return &user, err                  // Возвращаем указатель на пользователя и ошибку (если есть)
+	var user models.User
+	err := r.db.First(&user, id).Error
+	return &user, err
 }
 
-// FindByUsername ищет пользователя по имени
 func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 	var user models.User
 	err := r.db.Where("username = ?", username).First(&user).Error
@@ -49,17 +42,15 @@ func (r *userRepository) FindByUsername(username string) (*models.User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, err // Возвращаем nil вместо &user
 		}
-		return nil, err // Возвращаем nil для других ошибок
+		return nil, err
 	}
-	return &user, nil // Возвращаем указатель на пользователя, если он найден                                             // Возвращаем указатель на пользователя и ошибку
+	return &user, nil
 }
 
-// Update обновляет данные пользователя в базе
 func (r *userRepository) Update(user *models.User, updates map[string]interface{}) error {
 	return r.db.Model(user).Updates(updates).Error
 }
 
-// Delete удаляет пользователя по ID
 func (r *userRepository) Delete(id uint) error {
 	return r.db.Delete(&models.User{}, id).Error // Удаляем запись из базы по ID
 }

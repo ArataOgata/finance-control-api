@@ -77,5 +77,5 @@ func (r *categoryRepository) UpdateWithTx(tx *gorm.DB, category *models.Category
 	if tx == nil {
 		return errors.New("transaction is required")
 	}
-	return tx.Save(category).Error // Используем GORM для обновления записи
+	return tx.Save(category).Error
 }
