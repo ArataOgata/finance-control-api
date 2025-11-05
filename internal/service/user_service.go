@@ -1,11 +1,11 @@
-package service // Объявляем пакет service, который находится в internal/service
+package service
 
 import (
-	"errors" // Импортируем стандартный пакет для создания ошибок
+	"errors"
 	"fmt"
 	userdto "go-api/internal/dto/user_dto"
-	"go-api/internal/models"     // Импортируем пакет с моделью User
-	"go-api/internal/repository" // Импортируем пакет repository для работы с UserRepository
+	"go-api/internal/models"
+	"go-api/internal/repository"
 	"log"
 
 	"gorm.io/gorm"
@@ -13,8 +13,8 @@ import (
 
 // UserService — интерфейс, определяющий бизнес-логику для работы с пользователями
 type UserService interface {
-	Register(username string, balance int, tg_id int) (*models.User, error) // Регистрация нового пользователя
-	GetUser(id uint) (*models.User, error)                                  // Получение данных пользователя по ID
+	Register(username string, balance int, tg_id int) (*models.User, error)
+	GetUser(id uint) (*models.User, error)
 	UpdateUser(req *userdto.UpdateUserRequest) (*models.User, error)
 }
 
@@ -25,19 +25,19 @@ type userService struct {
 
 // NewUserService — конструктор для создания сервиса
 func NewUserService(repo repository.UserRepository) UserService {
-	return &userService{repo: repo} // Создаём структуру userService с переданным репозиторием
+	return &userService{repo: repo}
 }
 
 // Register создаёт нового пользователя с указанным именем и балансом
 func (s *userService) Register(username string, balance int, tg_id int) (*models.User, error) {
-	// Проверяем, не занято ли имя пользователя
-	exists, err := s.repo.FindByUsername(username) // Игнорируем ошибку (неидеально)
+
+	exists, err := s.repo.FindByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// Пользователь не найден, можно продолжать регистрацию
+
 		} else {
-			log.Println("Failed to check username:", err)               // Логируем ошибку
-			return nil, fmt.Errorf("failed to check username: %w", err) // Возвращаем обёрнутую ошибку
+			log.Println("Failed to check username:", err)
+			return nil, fmt.Errorf("failed to check username: %w", err)
 		}
 	}
 
@@ -47,18 +47,18 @@ func (s *userService) Register(username string, balance int, tg_id int) (*models
 	}
 
 	user := &models.User{
-		Username: username, // Устанавливаем имя пользователя
-		Balance:  balance,  // Устанавливаем начальный баланс
+		Username: username,
+		Balance:  balance,
 		Tg_id:    tg_id,
 	}
 
-	err = s.repo.Create(user) // Сохраняем пользователя в базе через репозиторий
-	return user, err          // Возвращаем созданного пользователя или ошибку
+	err = s.repo.Create(user)
+	return user, err
 }
 
 // GetUser получает пользователя по ID
 func (s *userService) GetUser(id uint) (*models.User, error) {
-	return s.repo.FindByID(id) // Вызываем метод репозитория для получения пользователя
+	return s.repo.FindByID(id)
 }
 
 func (s *userService) UpdateUser(req *userdto.UpdateUserRequest) (*models.User, error) {
