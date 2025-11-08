@@ -13,14 +13,14 @@ import (
 
 // UserService — интерфейс, определяющий бизнес-логику для работы с пользователями
 type UserService interface {
-	Register(username string, balance int, tg_id int) (*models.User, error)
+	Register(username string, balance uint, tg_id uint) (*models.User, error)
 	GetUser(id uint) (*models.User, error)
-	UpdateUser(req *userdto.UpdateUserRequest) (*models.User, error)
+	UpdateUser(req *userdto.UserRequest) (*models.User, error)
 }
 
 // userService — структура, реализующая интерфейс UserService
 type userService struct {
-	repo repository.UserRepository // Зависимость от репозитория для доступа к данным
+	repo repository.UserRepository
 }
 
 // NewUserService — конструктор для создания сервиса
@@ -29,7 +29,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 }
 
 // Register создаёт нового пользователя с указанным именем и балансом
-func (s *userService) Register(username string, balance int, tg_id int) (*models.User, error) {
+func (s *userService) Register(username string, balance uint, tg_id uint) (*models.User, error) {
 
 	exists, err := s.repo.FindByUsername(username)
 	if err != nil {
@@ -48,8 +48,8 @@ func (s *userService) Register(username string, balance int, tg_id int) (*models
 
 	user := &models.User{
 		Username: username,
-		Balance:  balance,
-		Tg_id:    tg_id,
+		Balance:  int(balance),
+		Tg_id:    int(tg_id),
 	}
 
 	err = s.repo.Create(user)
@@ -61,7 +61,7 @@ func (s *userService) GetUser(id uint) (*models.User, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *userService) UpdateUser(req *userdto.UpdateUserRequest) (*models.User, error) {
+func (s *userService) UpdateUser(req *userdto.UserRequest) (*models.User, error) {
 	user, err := s.repo.FindByID(req.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)

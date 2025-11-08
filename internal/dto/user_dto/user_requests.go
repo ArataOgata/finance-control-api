@@ -4,26 +4,26 @@ import (
 	"strings"
 )
 
-type UpdateUserRequest struct {
+type UserRequest struct {
 	UserID   uint    `json:"user_id" validate:"required,min=1"`
 	Username *string `json:"username,omitempty" validate:"omitempty,min=1,max=25"`
-	Tg_id    *int    `json:"tg_id,omitempty" validate:"omitempty"`
+	TgID     *int    `json:"tg_id,omitempty" validate:"omitempty"`
 	Balance  *int    `json:"balance,omitempty" validate:"omitempty"`
 }
 
-func (r *UpdateUserRequest) IsEmpty() bool {
-	return r.Username == nil && r.Tg_id == nil && r.Balance == nil
+func (r *UserRequest) IsEmpty() bool {
+	return r.Username == nil && r.TgID == nil && r.Balance == nil
 }
 
-func (r *UpdateUserRequest) ToMap(balance *int) map[string]interface{} {
+func (r *UserRequest) ToMap(balance *int) map[string]interface{} {
 	updates := make(map[string]interface{})
 
 	if r.Username != nil {
 		updates["username"] = strings.TrimSpace((*r.Username))
 	}
 
-	if r.Tg_id != nil {
-		updates["tg_id"] = *r.Tg_id
+	if r.TgID != nil {
+		updates["tg_id"] = *r.TgID
 	}
 
 	if r.Balance != nil && balance != nil {
