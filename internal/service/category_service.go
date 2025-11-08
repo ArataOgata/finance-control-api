@@ -12,9 +12,9 @@ import (
 )
 
 type CategoryService interface {
-	CreateCategory(title string, description string, userId uint) (*models.Category, error)
-	GetCategory(CategoryID uint, userID uint) (*models.Category, error)
-	UpdateCategory(req *dto.UpdateCategoryRequest) (*models.Category, error)
+	CreateCategory(title string, description string, userId uint) (*dto.CategoryResponse, error)
+	GetCategory(CategoryID uint, userID uint) (*dto.CategoryResponse, error)
+	UpdateCategory(req *dto.UpdateCategoryRequest) (*dto.CategoryResponse, error)
 }
 
 type categoryService struct {
@@ -26,7 +26,7 @@ func NewCategoryService(repo repository.CategoryRepository, userRepo repository.
 	return &categoryService{repo: repo, userRepo: userRepo}
 }
 
-func (c *categoryService) CreateCategory(title string, description string, userID uint) (*models.Category, error) {
+func (c *categoryService) CreateCategory(title string, description string, userID uint) (*dto.CategoryResponse, error) {
 	user, err := c.userRepo.FindByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -59,10 +59,16 @@ func (c *categoryService) CreateCategory(title string, description string, userI
 	}
 
 	err = c.repo.Create(category)
-	return category, err
+	return &dto.CategoryResponse{
+		UserID:      category.UserID,
+		CategoryID:  category.CategoryID,
+		Title:       category.Title,
+		Description: &category.Title,
+		Total:       category.Total,
+	}, err
 }
 
-func (c *categoryService) GetCategory(CategoryID uint, userID uint) (*models.Category, error) {
+func (c *categoryService) GetCategory(CategoryID uint, userID uint) (*dto.CategoryResponse, error) {
 	user, err := c.userRepo.FindByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -83,10 +89,16 @@ func (c *categoryService) GetCategory(CategoryID uint, userID uint) (*models.Cat
 		return nil, fmt.Errorf("failed to get category: %w", err)
 	}
 
-	return category, nil
+	return &dto.CategoryResponse{
+		UserID:      category.UserID,
+		CategoryID:  category.CategoryID,
+		Title:       category.Title,
+		Description: &category.Title,
+		Total:       category.Total,
+	}, nil
 }
 
-func (c *categoryService) UpdateCategory(req *dto.UpdateCategoryRequest) (*models.Category, error) {
+func (c *categoryService) UpdateCategory(req *dto.UpdateCategoryRequest) (*dto.CategoryResponse, error) {
 
 	user, err := c.userRepo.FindByID(req.UserID)
 	if err != nil {
@@ -120,5 +132,11 @@ func (c *categoryService) UpdateCategory(req *dto.UpdateCategoryRequest) (*model
 		category.Total = total
 	}
 
-	return category, nil
+	return &dto.CategoryResponse{
+		UserID:      category.UserID,
+		CategoryID:  category.CategoryID,
+		Title:       category.Title,
+		Description: &category.Title,
+		Total:       category.Total,
+	}, nil
 }
