@@ -12,6 +12,17 @@ type UpdateCategoryRequest struct {
 	Total       *int    `json:"total,omitempty" validate:"omitempty,min=0"`
 }
 
+type QueryIDs struct {
+	UserID     uint `validate:"gt=0" query:"user_id"`
+	CategoryID uint `validate:"gt=0" query:"category_id"`
+}
+
+type CreateCategory struct {
+	Title       string `json:"title" validate:"required,min=1,max=50"`
+	Description string `json:"description" validate:"required,min=1,max=300"`
+	UserID      uint   `json:"user_id" validate:"required,gt=1"`
+}
+
 func (r *UpdateCategoryRequest) IsEmpty() bool {
 	return r.Title == nil && r.Description == nil && r.Total == nil
 }
