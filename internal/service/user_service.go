@@ -13,9 +13,9 @@ import (
 
 // UserService — интерфейс, определяющий бизнес-логику для работы с пользователями
 type UserService interface {
-	Register(username string, balance uint, tg_id uint) (*models.User, error)
-	GetUser(id uint) (*models.User, error)
-	UpdateUser(req *userdto.UserRequest) (*models.User, error)
+	Register(username string, balance uint, tg_id uint) (*userdto.UserResponse, error)
+	GetUser(id uint) (*userdto.UserResponse, error)
+	UpdateUser(req *userdto.UserRequest) (*userdto.UserResponse, error)
 }
 
 // userService — структура, реализующая интерфейс UserService
@@ -29,7 +29,7 @@ func NewUserService(repo repository.UserRepository) UserService {
 }
 
 // Register создаёт нового пользователя с указанным именем и балансом
-func (s *userService) Register(username string, balance uint, tg_id uint) (*models.User, error) {
+func (s *userService) Register(username string, balance uint, tg_id uint) (*userdto.UserResponse, error) {
 
 	exists, err := s.repo.FindByUsername(username)
 	if err != nil {
@@ -53,15 +53,31 @@ func (s *userService) Register(username string, balance uint, tg_id uint) (*mode
 	}
 
 	err = s.repo.Create(user)
-	return user, err
+	return &userdto.UserResponse{
+		Username: user.Username,
+		TgID:     uint(user.Tg_id),
+		Balance:  user.Balance,
+	}, err
 }
 
 // GetUser получает пользователя по ID
-func (s *userService) GetUser(id uint) (*models.User, error) {
-	return s.repo.FindByID(id)
+func (s *userService) GetUser(id uint) (*userdto.UserResponse, error) {
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		log.Println("Failed to check username:", err)
+		return nil, fmt.Errorf("failed to check username: %w", err)
+	}
+	return &userdto.UserResponse{
+		Username: user.Username,
+		TgID:     uint(user.Tg_id),
+		Balance:  user.Balance,
+	}, nil
 }
 
-func (s *userService) UpdateUser(req *userdto.UserRequest) (*models.User, error) {
+func (s *userService) UpdateUser(req *userdto.UserRequest) (*userdto.UserResponse, error) {
 	user, err := s.repo.FindByID(req.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
@@ -92,5 +108,9 @@ func (s *userService) UpdateUser(req *userdto.UserRequest) (*models.User, error)
 		user.Balance = balance
 	}
 
-	return user, nil
+	return &userdto.UserResponse{
+		Username: user.Username,
+		TgID:     uint(user.Tg_id),
+		Balance:  user.Balance,
+	}, nil
 }

@@ -62,11 +62,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(resp.Response{
 		StatusCode: resp.StatusOK,
-		Data: userdto.UserResponse{
-			Username: user.Username,
-			TgID:     uint(user.Tg_id),
-			Balance:  user.Balance,
-		},
+		Data:       user,
 	}); err != nil {
 		log.Info("Error encoding response", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusInternalServerError, err.Error())
@@ -101,11 +97,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(resp.Response{
 		StatusCode: resp.StatusOK,
-		Data: userdto.UserResponse{
-			Username: user.Username,
-			TgID:     uint(user.Tg_id),
-			Balance:  user.Balance,
-		},
+		Data:       user,
 	}); err != nil {
 		log.Info("Error encoding response", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusInternalServerError, err.Error())
@@ -147,11 +139,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(resp.Response{
 		StatusCode: resp.StatusOK,
-		Data: userdto.UserResponse{
-			Username: user.Username,
-			TgID:     uint(user.Tg_id),
-			Balance:  user.Balance,
-		},
+		Data:       user,
 	}); err != nil {
 		log.Info("Error encoding response", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusInternalServerError, err.Error())

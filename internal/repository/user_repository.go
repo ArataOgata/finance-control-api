@@ -26,7 +26,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepository) Create(user *models.User) error {
-	return r.db.Create(user).Error // Используем GORM для создания записи в базе данных
+	return r.db.Create(user).Error
 }
 
 func (r *userRepository) FindByID(id uint) (*models.User, error) {
