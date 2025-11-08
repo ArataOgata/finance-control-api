@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	respo "go-api/internal/dto/base_response"
 	dto "go-api/internal/dto/order_dto"
 	"go-api/internal/service"
 	"log/slog"
@@ -31,7 +32,7 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Info("Error decoding create order request", slog.String("error", err.Error()))
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		respo.SendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -43,7 +44,10 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(resp); err != nil {
+		if err := json.NewEncoder(w).Encode(respo.Response{
+			StatusCode: respo.StatusOK,
+			Data:       resp,
+		}); err != nil {
 			log.Info("Error encoding create order response", slog.String("error", err.Error()))
 			return err
 		}
@@ -52,19 +56,10 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error("Error creating order", slog.String("error", err.Error()))
-		h.sendJSONError(w, err.Error(), http.StatusBadRequest)
+		respo.SendError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	log.Info("Request completed successfully")
 
-}
-
-func (h *OrderHandler) sendJSONError(w http.ResponseWriter, message string, status int) {
-	log := h.logger.With(slog.String("op", "sendJSONError"))
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(map[string]string{"error": message}); err != nil {
-		log.Error("Error encoding JSON response", slog.String("error", err.Error()))
-	}
 }
