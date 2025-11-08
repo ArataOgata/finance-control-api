@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"go-api/internal/decoder"
 	"log/slog"
 	"net/http"
-	"strconv"
+	//"strconv"
 
 	resp "go-api/internal/dto/base_response"
 	userdto "go-api/internal/dto/user_dto"
@@ -30,43 +31,35 @@ func NewUserHandler(service service.UserService, log *slog.Logger) *UserHandler 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	const op = "Handler/UserHandler.Register"
 
+	var req userdto.UserRegisterRequest
+
 	log := h.logger.With(
 		slog.String("op", op),
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	var input struct {
-		Username string `json:"username"`
-		Balance  uint   `json:"balance"`
-		Tg_id    uint   `json:"tgID"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Info("Error decoding body", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	//if err := validators.ValidateUsername(input.Username); err != nil {
-	//	http.Error(w, err.validators(), http.StatusBadRequest)
-	//	return
-	//}
+	if err := validators.Validate.Struct(req); err != nil {
+		log.Info("Error validating body", slog.String("error", err.Error()))
+		resp.SendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
-	user, err := h.service.Register(input.Username, input.Balance, input.Tg_id)
+	user, err := h.service.Register(req.Username, req.Balance, req.TgID)
 	if err != nil {
 		log.Info("Error registering user", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(resp.Response{
-		StatusCode: resp.StatusOK,
-		Data:       user,
-	}); err != nil {
+	if err := resp.SendJSON(w, user); err != nil {
 		log.Info("Error encoding response", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusInternalServerError, err.Error())
-		return
 	}
 	log.Info("Successfully registered user", slog.String("username", user.Username))
 }
@@ -78,30 +71,23 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
-
-	idStr := r.URL.Query().Get("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil || id <= 0 {
-		log.Warn("Invalid user ID provided", slog.String("id", idStr), slog.String("error", "Invalid user ID"))
-		resp.SendError(w, http.StatusBadRequest, "Invalid user ID")
+	var UDI userdto.UserIDS
+	if err := decoder.Decoder.Decode(&UDI, r.URL.Query()); err != nil {
+		log.Info("Invalid query parameters", slog.String("error", err.Error()))
+		resp.SendError(w, http.StatusBadRequest, "Invalid query parameters")
 		return
 	}
 
-	user, err := h.service.GetUser(uint(id))
+	user, err := h.service.GetUser(UDI.UserID)
 	if err != nil {
 		log.Info("Error getting user", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(resp.Response{
-		StatusCode: resp.StatusOK,
-		Data:       user,
-	}); err != nil {
+	if err := resp.SendJSON(w, user); err != nil {
 		log.Info("Error encoding response", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusInternalServerError, err.Error())
-		return
 	}
 	log.Info("Successfully fetched user", slog.String("username", user.Username))
 }
@@ -115,15 +101,13 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	validator := &validators.UserValidator{}
-
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Info("Error decoding body", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if err := validator.ValidateUpdateRequest(&req); err != nil {
+	if err := validators.Validate.Struct(&req); err != nil {
 		log.Info("Error validating update request", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusBadRequest, err.Error())
 		return
@@ -136,14 +120,9 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(resp.Response{
-		StatusCode: resp.StatusOK,
-		Data:       user,
-	}); err != nil {
+	if err := resp.SendJSON(w, user); err != nil {
 		log.Info("Error encoding response", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusInternalServerError, err.Error())
-		return
 	}
 
 	log.Info("Successfully updated user", slog.String("username", user.Username))

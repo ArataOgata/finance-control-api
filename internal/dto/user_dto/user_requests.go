@@ -11,6 +11,16 @@ type UserRequest struct {
 	Balance  *int    `json:"balance,omitempty" validate:"omitempty"`
 }
 
+type UserRegisterRequest struct {
+	TgID     uint   `json:"tg_id,required" validate:"required,gte=1"`
+	Username string `json:"username,required" validate:"required,min=3,max=35"`
+	Balance  uint   `json:"balance,omitempty" validate:"omitempty,gte=0"`
+}
+
+type UserIDS struct {
+	UserID uint `validate:"gt=0" query:"id"`
+}
+
 func (r *UserRequest) IsEmpty() bool {
 	return r.Username == nil && r.TgID == nil && r.Balance == nil
 }

@@ -2,6 +2,8 @@ package base_response
 
 import (
 	"encoding/json"
+	"log"
+	"log/slog"
 	"net/http"
 )
 
@@ -21,6 +23,19 @@ func Error(msg string) Response {
 		StatusCode: StatusError,
 		Error:      msg,
 	}
+}
+
+func SendJSON(w http.ResponseWriter, data interface{}) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(Response{
+		StatusCode: StatusOK,
+		Data:       data,
+	}); err != nil {
+		log.Println("Error encoding response", slog.String("error", err.Error()))
+		return err
+	}
+	return nil
 }
 
 func SendError(w http.ResponseWriter, status int, msg string) {
