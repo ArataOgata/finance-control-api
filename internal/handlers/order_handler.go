@@ -5,6 +5,7 @@ import (
 	respo "go-api/internal/dto/base_response"
 	dto "go-api/internal/dto/order_dto"
 	"go-api/internal/service"
+	"go-api/internal/validators"
 	"log/slog"
 	"net/http"
 
@@ -36,20 +37,22 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := validators.Validate.Struct(req); err != nil {
+		log.Info("Error validating create order request", slog.String("error", err.Error()))
+		respo.SendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	err := h.db.Transaction(func(tx *gorm.DB) error {
-		resp, err := h.service.CreateOrder(tx, &req)
+		order, err := h.service.CreateOrder(tx, &req)
 		if err != nil {
 			log.Info("Error creating order", slog.String("error", err.Error()))
 			return err
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(respo.Response{
-			StatusCode: respo.StatusOK,
-			Data:       resp,
-		}); err != nil {
-			log.Info("Error encoding create order response", slog.String("error", err.Error()))
-			return err
+		if err := respo.SendJSON(w, order); err != nil {
+			log.Info("Error encoding response", slog.String("error", err.Error()))
+			respo.SendError(w, http.StatusInternalServerError, err.Error())
 		}
 		return nil
 	})
