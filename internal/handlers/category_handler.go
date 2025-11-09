@@ -3,7 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"go-api/internal/decoder"
-	resp "go-api/internal/dto/base_response"
+	resp "go-api/internal/dto/base"
 	dto "go-api/internal/dto/category_dto"
 	"go-api/internal/service"
 	"go-api/internal/validators"
@@ -70,7 +70,7 @@ func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request) {
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	var ids dto.QueryIDs
+	var ids resp.QueryIDs
 
 	if err := decoder.Decoder.Decode(&ids, r.URL.Query()); err != nil {
 		log.Info("Invalid query parameters", slog.String("error", err.Error()))

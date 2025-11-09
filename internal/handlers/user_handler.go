@@ -7,7 +7,7 @@ import (
 	"net/http"
 	//"strconv"
 
-	resp "go-api/internal/dto/base_response"
+	resp "go-api/internal/dto/base"
 	userdto "go-api/internal/dto/user_dto"
 	"go-api/internal/service"
 	"go-api/internal/validators"
