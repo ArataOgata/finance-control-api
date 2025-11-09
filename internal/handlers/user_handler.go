@@ -78,6 +78,12 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := validators.Validate.Struct(UDI); err != nil {
+		log.Info("Error validating body", slog.String("error", err.Error()))
+		resp.SendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	user, err := h.service.GetUser(UDI.UserID)
 	if err != nil {
 		log.Info("Error getting user", slog.String("error", err.Error()))
