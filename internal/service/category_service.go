@@ -55,7 +55,7 @@ func (c *categoryService) CreateCategory(title string, description string, userI
 	category := &models.Category{
 		Title:       title,
 		Description: description,
-		UserID:      uint(user.UserID),
+		UserID:      user.UserID,
 	}
 
 	err = c.repo.Create(category)

@@ -15,7 +15,7 @@ type UpdateCategoryRequest struct {
 type CreateCategory struct {
 	Title       string `json:"title" validate:"required,min=1,max=50"`
 	Description string `json:"description" validate:"required,min=1,max=300"`
-	UserID      uint   `json:"user_id" validate:"required,gt=1"`
+	UserID      uint   `json:"user_id" validate:"required,gt=0"`
 }
 
 func (r *UpdateCategoryRequest) IsEmpty() bool {
