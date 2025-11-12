@@ -25,7 +25,7 @@ func NewRouter(log *slog.Logger) *chi.Mux {
 	catHandler := handlers.NewCategoryHandler(catService, log)
 
 	ordRepo := repository.NewOrderRepository(db.DB)
-	ordService := service.NewOrederService(ordRepo, userRepo, catRepo)
+	ordService := service.NewOrderService(ordRepo, userRepo, catRepo)
 	ordHandler := handlers.NewOrderHandler(db.DB, ordService, log)
 
 	r.Use(middleware.RequestID)

@@ -19,7 +19,7 @@ type orderService struct {
 	categRepo repository.CategoryRepository
 }
 
-func NewOrederService(
+func NewOrderService(
 	orderRepo repository.OrderRepository,
 	userRepo repository.UserRepository,
 	categRepo repository.CategoryRepository,
@@ -28,7 +28,6 @@ func NewOrederService(
 }
 
 func (os *orderService) CreateOrder(tx *gorm.DB, req *dto.CreateOrderRequest) (*dto.OrderResponse, error) {
-	// log.Info().Uint("user_id", req.UserID).Uint("category_id", req.CategoryID).Msg("Creating order")
 
 	user, err := os.userRepo.FindByIDWithTx(tx, req.UserID)
 	if err != nil {
