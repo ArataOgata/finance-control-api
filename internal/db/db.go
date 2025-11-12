@@ -25,9 +25,19 @@ func ConnectDatabase(cfg config.Config) {
 	fmt.Println("Connected to PostgreSQL")
 
 	// Авто-миграция моделей
-	err = DB.AutoMigrate(&models.User{}, &models.Category{}, &models.Order{})
+	err = DB.AutoMigrate(&models.User{})
 	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+		log.Fatalf("Failed to migrate table User: %v", err)
+	}
+
+	err = DB.AutoMigrate(&models.Category{})
+	if err != nil {
+		log.Fatalf("Failed to migrate table Category: %v", err)
+	}
+
+	err = DB.AutoMigrate(&models.Order{})
+	if err != nil {
+		log.Fatalf("Failed to migrate table Order: %v", err)
 	}
 
 	fmt.Println("Database migrated")

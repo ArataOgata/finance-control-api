@@ -10,4 +10,6 @@ type Category struct {
 	Total       int       `gorm:"default:0" json:"total"`
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UserID      uint      `gorm:"not null" json:"user_id"`
+
+	User User `gorm:"foreignKey:UserID;references:UserID" json:"user,omitempty"`
 }

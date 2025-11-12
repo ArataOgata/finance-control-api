@@ -12,4 +12,7 @@ type Order struct {
 	Request     []byte    `gorm:"type:jsonb;" json:"-"`
 	Response    []byte    `gorm:"type:jsonb;" json:"-"`
 	NaviDate    time.Time `gorm:"autoCreateTime" json:"navi_date"`
+
+	Category Category `gorm:"foreignKey:CategoryID;references:CategoryID" json:"category,omitempty"`
+	User     User     `gorm:"foreignKey:UserID;references:UserID" json:"user,omitempty"`
 }
