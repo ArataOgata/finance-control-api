@@ -10,3 +10,12 @@ type OrderResponse struct {
 	Amount      int       `json:"amount"`
 	NaviDate    time.Time `json:"navi_date"`
 }
+
+type OrderItemDTO struct {
+	OrderID     uint      `json:"order_id"`
+	Amount      int       `json:"amount"`
+	Description string    `json:"description"`
+	NaviDate    time.Time `json:"navi_date"`
+}
+
+type OrdersByCategoryDTO map[string][]*OrderItemDTO

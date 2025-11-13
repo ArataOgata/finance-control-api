@@ -11,6 +11,7 @@ import (
 
 type OrderService interface {
 	CreateOrder(tx *gorm.DB, req *dto.CreateOrderRequest) (*dto.OrderResponse, error)
+	GetAllGroupedByCategory(tx *gorm.DB, userId uint) (dto.OrdersByCategoryDTO, error)
 }
 
 type orderService struct {
@@ -73,4 +74,37 @@ func (os *orderService) CreateOrder(tx *gorm.DB, req *dto.CreateOrderRequest) (*
 		NaviDate:    order.NaviDate,
 	}, nil
 
+}
+
+func (os *orderService) GetAllGroupedByCategory(tx *gorm.DB, userId uint) (dto.OrdersByCategoryDTO, error) {
+	user, err := os.userRepo.FindByIDWithTx(tx, userId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	orders, err := os.orderRepo.GetAll(tx, user.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get orders: %w", err)
+	}
+
+	grouped := make(map[string][]*models.Order)
+	for _, order := range orders {
+		grouped[order.Category.Title] = append(grouped[order.Category.Title], order)
+	}
+
+	result := make(dto.OrdersByCategoryDTO)
+	for title, orders := range grouped {
+		items := make([]*dto.OrderItemDTO, len(orders))
+		for i, o := range orders {
+			items[i] = &dto.OrderItemDTO{
+				OrderID:     o.OrderID,
+				Amount:      o.Amount,
+				Description: o.Description,
+				NaviDate:    o.NaviDate,
+			}
+		}
+		result[title] = items
+	}
+
+	return result, nil
 }

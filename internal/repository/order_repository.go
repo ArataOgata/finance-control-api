@@ -11,6 +11,7 @@ type OrderRepository interface {
 	Create(order *models.Order) error
 	CreateWithTx(tx *gorm.DB, order *models.Order) error
 	FindByID(tx *gorm.DB, userId uint, categoryId uint, orderId uint) (*models.Order, error)
+	GetAll(tx *gorm.DB, userId uint) ([]*models.Order, error)
 }
 
 type orderRepository struct {
@@ -38,7 +39,7 @@ func (o *orderRepository) FindByID(tx *gorm.DB, userId uint, categoryId uint, or
 	if tx == nil {
 		return nil, errors.New("transaction is required")
 	}
-	err := o.db.Where("user_id = ? AND order_id = ? AND order_id = ?", userId, categoryId, orderId).First(&order).Error
+	err := o.db.Where("user_id = ? AND category_id = ? AND order_id = ?", userId, categoryId, orderId).First(&order).Error
 	return &order, err
 }
 
@@ -48,13 +49,9 @@ func (o *orderRepository) GetAll(tx *gorm.DB, userId uint) ([]*models.Order, err
 		return nil, errors.New("transaction is required")
 	}
 
-	err := tx.Where("user_id = ?", userId).Find(&orders).Error
+	err := tx.Where("user_id = ?", userId).Preload("Category").Find(&orders).Error
 	if err != nil {
 		return nil, err
-	}
-
-	if len(orders) == 0 {
-		return []*models.Order{}, nil
 	}
 
 	return orders, nil
