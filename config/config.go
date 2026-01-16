@@ -9,7 +9,7 @@ import (
 
 type Config struct {
 	Env          string     `mapstructure:"env" env-required:"true"`
-	Database_URL string     `mapstructure:"database_URL" env-required:"true"`
+	Database_URL string     `mapstructure:"DatabaseURL" env-required:"true"`
 	HttpServer   HttpServer `mapstructure:"http_server"`
 }
 
@@ -24,7 +24,7 @@ func LoadConfig() (Config, error) {
 
 	viper.SetConfigName("local.yml")
 	viper.SetConfigType("yml")
-	viper.AddConfigPath("/Users/arataogata/dev/go/lesson1/go-api/")
+	viper.AddConfigPath("/home/arata/dev/go-api/")
 
 	viper.SetDefault("http_server.address", "localhost:8080")
 	viper.SetDefault("http_server.timeout", "4s")
