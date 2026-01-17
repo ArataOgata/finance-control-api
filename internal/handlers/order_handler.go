@@ -106,3 +106,47 @@ func (h *OrderHandler) GetAllOrders(w http.ResponseWriter, r *http.Request) {
 	log.Info("Request completed successfully")
 
 }
+
+func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
+	const op = "Handlers.OrderHandler.GetOrderByID"
+	log := h.logger.With(
+		slog.String("op", op),
+		slog.String("request_id", middleware.GetReqID(r.Context())),
+	)
+
+	var IDs dto.OrderIDS
+	if err := decoder.Decoder.Decode(&IDs, r.URL.Query()); err != nil {
+		log.Info("Invalid query parameters", slog.String("error", err.Error()))
+		respo.SendError(w, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	if err := validators.Validate.Struct(IDs); err != nil {
+		log.Info("Error validating body", slog.String("error", err.Error()))
+		respo.SendError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	err := h.db.Transaction(func(tx *gorm.DB) error {
+		orders, err := h.service.GetOrderByid(tx, IDs.OrderID, IDs.UserID)
+		if err != nil {
+			log.Info("Error getting all orders", slog.String("error", err.Error()))
+			return err
+		}
+
+		if err := respo.SendJSON(w, orders); err != nil {
+			log.Info("Error encoding response", slog.String("error", err.Error()))
+			respo.SendError(w, http.StatusInternalServerError, err.Error())
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Error("Error getting all orders", slog.String("error", err.Error()))
+		respo.SendError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.Info("Request completed successfully")
+
+}

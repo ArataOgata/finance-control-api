@@ -49,6 +49,7 @@ func NewRouter(log *slog.Logger) *chi.Mux {
 	r.Route("/api/v1/order", func(r chi.Router) {
 		r.Post("/", ordHandler.CreateOrder)
 		r.Get("/all", ordHandler.GetAllOrders)
+		r.Get("/", ordHandler.GetOrderByID)
 	})
 
 	return r

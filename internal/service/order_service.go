@@ -12,6 +12,7 @@ import (
 type OrderService interface {
 	CreateOrder(tx *gorm.DB, req *dto.CreateOrderRequest) (*dto.OrderResponse, error)
 	GetAllGroupedByCategory(tx *gorm.DB, userId uint) (dto.OrdersByCategoryDTO, error)
+	GetOrderByid(tx *gorm.DB, orderID uint, userID uint) (*dto.OrderResponse, error)
 }
 
 type orderService struct {
@@ -107,4 +108,26 @@ func (os *orderService) GetAllGroupedByCategory(tx *gorm.DB, userId uint) (dto.O
 	}
 
 	return result, nil
+}
+
+func (os *orderService) GetOrderByid(tx *gorm.DB, orderID uint, userID uint) (*dto.OrderResponse, error) {
+	user, err := os.userRepo.FindByIDWithTx(tx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	order, err := os.orderRepo.GetOrder(tx, orderID, user.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get order: %w", err)
+	}
+
+	return &dto.OrderResponse{
+		OrderID:     order.OrderID,
+		UserID:      order.UserID,
+		CategoryID:  order.CategoryID,
+		Description: order.Description,
+		Amount:      order.Amount,
+		NaviDate:    order.NaviDate,
+	}, nil
+
 }
