@@ -1,6 +1,7 @@
 package router
 
 import (
+	midlle "go-api/internal/middleware"
 	"go-api/internal/middleware/logger"
 	"log/slog"
 
@@ -13,7 +14,7 @@ import (
 	"go-api/internal/service"
 )
 
-func NewRouter(log *slog.Logger) *chi.Mux {
+func NewRouter(log *slog.Logger, secretKey string) *chi.Mux {
 	r := chi.NewRouter()
 
 	userRepo := repository.NewUserRepository(db.DB)
@@ -34,22 +35,27 @@ func NewRouter(log *slog.Logger) *chi.Mux {
 	r.Get("/ping", handlers.PingHandler)
 
 	// public
-	r.Route("/api/v1/user", func(r chi.Router) {
-		r.Post("/register", userHandler.Register)
-		r.Get("/", userHandler.GetUser)
-		r.Patch("/update", userHandler.UpdateUser)
-	})
 
-	r.Route("/api/v1/category", func(r chi.Router) {
-		r.Post("/", catHandler.CreateCategory)
-		r.Get("/", catHandler.GetCategory)
-		r.Patch("/update", catHandler.UpdateCategory)
-	})
+	r.Group(func(r chi.Router) {
+		r.Use(midlle.AuthMiddleware(secretKey))
 
-	r.Route("/api/v1/order", func(r chi.Router) {
-		r.Post("/", ordHandler.CreateOrder)
-		r.Get("/all", ordHandler.GetAllOrders)
-		r.Get("/", ordHandler.GetOrderByID)
+		r.Route("/api/v1/user", func(r chi.Router) {
+			r.Post("/register", userHandler.Register)
+			r.Get("/", userHandler.GetUser)
+			r.Patch("/update", userHandler.UpdateUser)
+		})
+
+		r.Route("/api/v1/category", func(r chi.Router) {
+			r.Post("/", catHandler.CreateCategory)
+			r.Get("/", catHandler.GetCategory)
+			r.Patch("/update", catHandler.UpdateCategory)
+		})
+
+		r.Route("/api/v1/order", func(r chi.Router) {
+			r.Post("/", ordHandler.CreateOrder)
+			r.Get("/all", ordHandler.GetAllOrders)
+			r.Get("/", ordHandler.GetOrderByID)
+		})
 	})
 
 	return r

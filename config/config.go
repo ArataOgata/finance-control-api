@@ -11,6 +11,7 @@ type Config struct {
 	Env          string     `mapstructure:"env" env-required:"true"`
 	Database_URL string     `mapstructure:"DatabaseURL" env-required:"true"`
 	HttpServer   HttpServer `mapstructure:"http_server"`
+	JWTKey       string     `mapstructure:"Secret_Key" env-required:"true"`
 }
 
 type HttpServer struct {
