@@ -5,7 +5,7 @@ import (
 	"go-api/internal/decoder"
 	respo "go-api/internal/dto/base"
 	dto "go-api/internal/dto/order_dto"
-	userdto "go-api/internal/dto/user_dto"
+	midlle "go-api/internal/middleware"
 	"go-api/internal/service"
 	"go-api/internal/validators"
 	"log/slog"
@@ -33,6 +33,11 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	)
 	var req dto.CreateOrderRequest
 
+	userID, ok := midlle.UserIDFromRequest(r)
+	if !ok {
+		respo.SendError(w, http.StatusUnauthorized, "user id not found in context")
+	}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Info("Error decoding create order request", slog.String("error", err.Error()))
 		respo.SendError(w, http.StatusBadRequest, err.Error())
@@ -46,7 +51,7 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.db.Transaction(func(tx *gorm.DB) error {
-		order, err := h.service.CreateOrder(tx, &req)
+		order, err := h.service.CreateOrder(userID, tx, &req)
 		if err != nil {
 			log.Info("Error creating order", slog.String("error", err.Error()))
 			return err
@@ -76,15 +81,13 @@ func (h *OrderHandler) GetAllOrders(w http.ResponseWriter, r *http.Request) {
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
-	var UDI userdto.UserIDS
-	if err := decoder.Decoder.Decode(&UDI, r.URL.Query()); err != nil {
-		log.Info("Invalid query parameters", slog.String("error", err.Error()))
-		respo.SendError(w, http.StatusBadRequest, "Invalid query parameters")
-		return
+	userID, ok := midlle.UserIDFromRequest(r)
+	if !ok {
+		respo.SendError(w, http.StatusUnauthorized, "user id not found in context")
 	}
 
 	err := h.db.Transaction(func(tx *gorm.DB) error {
-		orders, err := h.service.GetAllGroupedByCategory(tx, UDI.UserID)
+		orders, err := h.service.GetAllGroupedByCategory(tx, userID)
 		if err != nil {
 			log.Info("Error getting all orders", slog.String("error", err.Error()))
 			return err
@@ -115,6 +118,11 @@ func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 	)
 
 	var IDs dto.OrderIDS
+	userID, ok := midlle.UserIDFromRequest(r)
+	if !ok {
+		respo.SendError(w, http.StatusUnauthorized, "user id not found in context")
+	}
+
 	if err := decoder.Decoder.Decode(&IDs, r.URL.Query()); err != nil {
 		log.Info("Invalid query parameters", slog.String("error", err.Error()))
 		respo.SendError(w, http.StatusBadRequest, "Invalid query parameters")
@@ -128,7 +136,7 @@ func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.db.Transaction(func(tx *gorm.DB) error {
-		orders, err := h.service.GetOrderByid(tx, IDs.OrderID, IDs.UserID)
+		orders, err := h.service.GetOrderByid(tx, IDs.OrderID, userID)
 		if err != nil {
 			log.Info("Error getting all orders", slog.String("error", err.Error()))
 			return err

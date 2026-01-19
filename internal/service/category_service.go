@@ -14,7 +14,7 @@ import (
 type CategoryService interface {
 	CreateCategory(title string, description string, userId uint) (*dto.CategoryResponse, error)
 	GetCategory(CategoryID uint, userID uint) (*dto.CategoryResponse, error)
-	UpdateCategory(req *dto.UpdateCategoryRequest) (*dto.CategoryResponse, error)
+	UpdateCategory(userID uint, req *dto.UpdateCategoryRequest) (*dto.CategoryResponse, error)
 }
 
 type categoryService struct {
@@ -98,9 +98,9 @@ func (c *categoryService) GetCategory(CategoryID uint, userID uint) (*dto.Catego
 	}, nil
 }
 
-func (c *categoryService) UpdateCategory(req *dto.UpdateCategoryRequest) (*dto.CategoryResponse, error) {
+func (c *categoryService) UpdateCategory(userID uint, req *dto.UpdateCategoryRequest) (*dto.CategoryResponse, error) {
 
-	user, err := c.userRepo.FindByID(req.UserID)
+	user, err := c.userRepo.FindByID(userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}

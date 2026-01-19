@@ -5,6 +5,7 @@ import (
 	"go-api/internal/decoder"
 	resp "go-api/internal/dto/base"
 	dto "go-api/internal/dto/category_dto"
+	midlle "go-api/internal/middleware"
 	"go-api/internal/service"
 	"go-api/internal/validators"
 	"log/slog"
@@ -34,6 +35,11 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 	)
 
 	var req dto.CreateCategory
+	userID, ok := midlle.UserIDFromRequest(r)
+	if !ok {
+		resp.SendError(w, http.StatusUnauthorized, "user id not found in context")
+		return
+	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Info("Error decoding body", slog.String("error", err.Error()))
@@ -47,7 +53,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	category, err := h.service.CreateCategory(req.Title, req.Description, req.UserID)
+	category, err := h.service.CreateCategory(req.Title, req.Description, userID)
 	if err != nil {
 		log.Info("Error creating category", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusInternalServerError, err.Error())
@@ -71,6 +77,11 @@ func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request) {
 	)
 
 	var ids resp.QueryIDs
+	userID, ok := midlle.UserIDFromRequest(r)
+	if !ok {
+		resp.SendError(w, http.StatusUnauthorized, "user id not found in context")
+		return
+	}
 
 	if err := decoder.Decoder.Decode(&ids, r.URL.Query()); err != nil {
 		log.Info("Invalid query parameters", slog.String("error", err.Error()))
@@ -84,7 +95,7 @@ func (h *CategoryHandler) GetCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	category, err := h.service.GetCategory(ids.CategoryID, ids.UserID)
+	category, err := h.service.GetCategory(ids.CategoryID, userID)
 	if err != nil {
 		log.Info("Error getting category", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusNotFound, err.Error())
@@ -109,6 +120,12 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 
 	var req dto.UpdateCategoryRequest
 
+	userID, ok := midlle.UserIDFromRequest(r)
+	if !ok {
+		resp.SendError(w, http.StatusUnauthorized, "user id not found in context")
+		return
+	}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Info("Error decoding body", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusBadRequest, err.Error())
@@ -121,7 +138,7 @@ func (h *CategoryHandler) UpdateCategory(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	category, err := h.service.UpdateCategory(&req)
+	category, err := h.service.UpdateCategory(userID, &req)
 	if err != nil {
 		log.Info("Error updating category", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusInternalServerError, err.Error())

@@ -10,7 +10,7 @@ import (
 )
 
 type OrderService interface {
-	CreateOrder(tx *gorm.DB, req *dto.CreateOrderRequest) (*dto.OrderResponse, error)
+	CreateOrder(userID uint, tx *gorm.DB, req *dto.CreateOrderRequest) (*dto.OrderResponse, error)
 	GetAllGroupedByCategory(tx *gorm.DB, userId uint) (dto.OrdersByCategoryDTO, error)
 	GetOrderByid(tx *gorm.DB, orderID uint, userID uint) (*dto.OrderResponse, error)
 }
@@ -29,9 +29,9 @@ func NewOrderService(
 	return &orderService{orderRepo: orderRepo, userRepo: userRepo, categRepo: categRepo}
 }
 
-func (os *orderService) CreateOrder(tx *gorm.DB, req *dto.CreateOrderRequest) (*dto.OrderResponse, error) {
+func (os *orderService) CreateOrder(userID uint, tx *gorm.DB, req *dto.CreateOrderRequest) (*dto.OrderResponse, error) {
 
-	user, err := os.userRepo.FindByIDWithTx(tx, req.UserID)
+	user, err := os.userRepo.FindByIDWithTx(tx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
@@ -51,7 +51,7 @@ func (os *orderService) CreateOrder(tx *gorm.DB, req *dto.CreateOrderRequest) (*
 	}
 
 	order := &models.Order{ // Создание модели заказа из DTO
-		UserID:      req.UserID,
+		UserID:      userID,
 		CategoryID:  req.CategoryID,
 		Description: req.Description,
 		Amount:      req.Amount,
