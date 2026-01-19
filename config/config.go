@@ -25,7 +25,7 @@ func LoadConfig() (Config, error) {
 
 	viper.SetConfigName("local.yml")
 	viper.SetConfigType("yml")
-	viper.AddConfigPath("/home/arata/dev/go-api/")
+	viper.AddConfigPath("/app")
 
 	viper.SetDefault("http_server.address", "localhost:8080")
 	viper.SetDefault("http_server.timeout", "4s")

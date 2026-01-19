@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -52,24 +53,33 @@ func AuthMiddleware(secretKey string) func(http.Handler) http.Handler {
 				return
 			}
 
-			userID, ok := claims["sub"].(string)
-			if !ok || userID == "" {
+			userIDstr, ok := claims["sub"].(string)
+			if !ok || userIDstr == "" {
 				resp.SendError(w, http.StatusUnauthorized, "В токене отсутствует или некорректный sub")
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), UserIDKey, userID)
+			userID, err := strconv.ParseUint(userIDstr, 10, 32)
+			if err != nil {
+				resp.SendError(w, http.StatusUnauthorized, "некорректный sub")
+				return
+			}
+
+			if userID <= 0 {
+				resp.SendError(w, http.StatusUnauthorized, "некорректный sub")
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), UserIDKey, uint(userID))
+			fmt.Println(userID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
 func UserIDFromRequest(r *http.Request) (uint, bool) {
-	uid, ok := r.Context().Value(UserIDKey).(string)
+	uid, ok := r.Context().Value(UserIDKey).(uint)
+	fmt.Println(uid, ok)
 
-	userID, err := strconv.ParseUint(uid, 10, 32) // или 64, если ID > 4 млрд
-	if err != nil {
-		return 0, false
-	}
-	return uint(userID), ok
+	return uid, ok
 }

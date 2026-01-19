@@ -37,10 +37,15 @@ func NewRouter(log *slog.Logger, secretKey string) *chi.Mux {
 	// public
 
 	r.Group(func(r chi.Router) {
+		r.Route("/api/v1/", func(r chi.Router) {
+			r.Post("/register", userHandler.Register)
+		})
+	})
+
+	r.Group(func(r chi.Router) {
 		r.Use(midlle.AuthMiddleware(secretKey))
 
 		r.Route("/api/v1/user", func(r chi.Router) {
-			r.Post("/register", userHandler.Register)
 			r.Get("/", userHandler.GetUser)
 			r.Patch("/update", userHandler.UpdateUser)
 		})

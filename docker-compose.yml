@@ -15,12 +15,27 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U example -d MyDB"]
+      test: ["CMD-SHELL", "pg_isready -U postgres_user -d postgres_db"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 80s
+      start_period: 30s
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./local.yml:/app/local.yml:ro 
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
@@ -29,5 +44,3 @@ volumes:
 networks:
   app-network:
     driver: bridge
-      
-
