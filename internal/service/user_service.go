@@ -15,7 +15,7 @@ import (
 type UserService interface {
 	Register(username string, balance uint, tg_id uint) (*userdto.UserResponse, error)
 	GetUser(id uint) (*userdto.UserResponse, error)
-	UpdateUser(req *userdto.UserRequest) (*userdto.UserResponse, error)
+	UpdateUser(userID uint, req *userdto.UserRequest) (*userdto.UserResponse, error)
 }
 
 // userService — структура, реализующая интерфейс UserService
@@ -77,8 +77,8 @@ func (s *userService) GetUser(id uint) (*userdto.UserResponse, error) {
 	}, nil
 }
 
-func (s *userService) UpdateUser(req *userdto.UserRequest) (*userdto.UserResponse, error) {
-	user, err := s.repo.FindByID(req.UserID)
+func (s *userService) UpdateUser(userID uint, req *userdto.UserRequest) (*userdto.UserResponse, error) {
+	user, err := s.repo.FindByID(userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}

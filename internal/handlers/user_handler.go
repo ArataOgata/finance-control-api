@@ -2,16 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
-	"go-api/internal/decoder"
 	"log/slog"
 	"net/http"
-	//"strconv"
 
 	resp "go-api/internal/dto/base"
 	userdto "go-api/internal/dto/user_dto"
+	midlle "go-api/internal/middleware"
 	"go-api/internal/service"
 	"go-api/internal/validators"
-	//_ "go-api/internal/validators"
 
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -71,20 +69,14 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
-	var UDI userdto.UserIDS
-	if err := decoder.Decoder.Decode(&UDI, r.URL.Query()); err != nil {
-		log.Info("Invalid query parameters", slog.String("error", err.Error()))
-		resp.SendError(w, http.StatusBadRequest, "Invalid query parameters")
+
+	userID, ok := midlle.UserIDFromRequest(r)
+	if !ok {
+		resp.SendError(w, http.StatusUnauthorized, "user id not found in context")
 		return
 	}
 
-	if err := validators.Validate.Struct(UDI); err != nil {
-		log.Info("Error validating body", slog.String("error", err.Error()))
-		resp.SendError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	user, err := h.service.GetUser(UDI.UserID)
+	user, err := h.service.GetUser(userID)
 	if err != nil {
 		log.Info("Error getting user", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusBadRequest, err.Error())
@@ -107,6 +99,12 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		slog.String("request_id", middleware.GetReqID(r.Context())),
 	)
 
+	userID, ok := midlle.UserIDFromRequest(r)
+	if !ok {
+		resp.SendError(w, http.StatusUnauthorized, "user id not found in context")
+		return
+	}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Info("Error decoding body", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusBadRequest, err.Error())
@@ -119,7 +117,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.service.UpdateUser(&req)
+	user, err := h.service.UpdateUser(userID, &req)
 	if err != nil {
 		log.Info("Error updating user", slog.String("error", err.Error()))
 		resp.SendError(w, http.StatusBadRequest, err.Error())

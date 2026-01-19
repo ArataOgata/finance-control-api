@@ -5,7 +5,7 @@ import (
 )
 
 type UserRequest struct {
-	UserID   uint    `json:"user_id" validate:"required,min=1"`
+	// UserID   uint    `json:"user_id" validate:"required,min=1"`
 	Username *string `json:"username,omitempty" validate:"omitempty,min=1,max=25"`
 	TgID     *int    `json:"tg_id,omitempty" validate:"omitempty"`
 	Balance  *int    `json:"balance,omitempty" validate:"omitempty"`

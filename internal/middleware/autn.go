@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -63,7 +64,12 @@ func AuthMiddleware(secretKey string) func(http.Handler) http.Handler {
 	}
 }
 
-func UserIDFromRequest(r *http.Request) (string, bool) {
+func UserIDFromRequest(r *http.Request) (uint, bool) {
 	uid, ok := r.Context().Value(UserIDKey).(string)
-	return uid, ok
+
+	userID, err := strconv.ParseUint(uid, 10, 32) // или 64, если ID > 4 млрд
+	if err != nil {
+		return 0, false
+	}
+	return uint(userID), ok
 }

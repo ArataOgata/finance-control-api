@@ -22,7 +22,7 @@ func main() {
 
 	db.ConnectDatabase(cfg)
 
-	r := router.NewRouter(logs)
+	r := router.NewRouter(logs, cfg.JWTKey)
 
 	logs.Info("Server running on ", slog.String("Address", cfg.HttpServer.Address))
 
